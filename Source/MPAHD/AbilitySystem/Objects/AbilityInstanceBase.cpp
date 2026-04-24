@@ -74,8 +74,6 @@ bool UAbilityInstanceBase::Activate()
 void UAbilityInstanceBase::CommitActivation()
 {
 	StartCooldown();
-
-	GEngine->AddOnScreenDebugMessage(-1, 7.0f, FColor::Red, TEXT("kabüüm"));
 }
 
 void UAbilityInstanceBase::StartCooldown()

@@ -22,7 +22,7 @@ struct FReplicatedAbilitySlot
 	float CurrentCooldown = 0.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float CooldownStartTime = -1.0f;
+	float CooldownStartServerTime = -1.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsBlocked = false;

@@ -138,7 +138,7 @@ bool UAbilityComponent::TryActivateAbilityBySlot(int32 SlotIndex)
 		return false;
 	}
 	
-	ReplicatedAbilitySlots[SlotIndex].CooldownStartTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	ReplicatedAbilitySlots[SlotIndex].CooldownStartServerTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 	HandleReplicatedSlotsReplication();
 	return true;
 }
@@ -162,7 +162,7 @@ float UAbilityComponent::GetCooldownRemainingForSlot(int32 SlotIndex) const
 
 	const FReplicatedAbilitySlot& Slot = ReplicatedAbilitySlots[SlotIndex];
 
-	if (Slot.CurrentCooldown <= 0.0f || Slot.CooldownStartTime < 0.0f)
+	if (Slot.CurrentCooldown <= 0.0f || Slot.CooldownStartServerTime < 0.0f)
 	{
 		return 0.0f;
 	}
@@ -174,7 +174,7 @@ float UAbilityComponent::GetCooldownRemainingForSlot(int32 SlotIndex) const
 	}
 
 	const float ServerTime = GameState->GetServerWorldTimeSeconds();
-	const float Elapsed = ServerTime - Slot.CooldownStartTime;
+	const float Elapsed = ServerTime - Slot.CooldownStartServerTime;
 
 	return FMath::Max(0.0f, Slot.CurrentCooldown - Elapsed);
 }

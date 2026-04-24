@@ -1,4 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MPAHDCharacter.h"
 #include "Engine/LocalPlayer.h"
