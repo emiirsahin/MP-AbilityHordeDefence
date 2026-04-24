@@ -54,6 +54,13 @@ AMPAHDCharacter::AMPAHDCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void AMPAHDCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+    
+	PrepareWidgets();
+}
+
 void AMPAHDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
@@ -81,6 +88,22 @@ void AMPAHDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	else
 	{
 		UE_LOG(LogMPAHD, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	}
+}
+
+void AMPAHDCharacter::PrepareWidgets()
+{
+	if (IsLocallyControlled() && AbilityCooldownWidgetClass)
+	{
+		if (APlayerController* PC = GetController<APlayerController>())
+		{
+			AbilityCooldownWidget = CreateWidget<UAbilityCooldownTestWidget>(PC, AbilityCooldownWidgetClass);
+			if (AbilityCooldownWidget)
+			{
+				AbilityCooldownWidget->AbilityComponent = AbilityComponent;
+				AbilityCooldownWidget->AddToViewport();
+			}
+		}
 	}
 }
 

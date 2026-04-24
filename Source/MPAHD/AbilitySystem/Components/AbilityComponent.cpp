@@ -1,18 +1,24 @@
 
 #include "AbilityComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "AbilitySystem/DataAssets/AbilityDefinition.h"
 #include "AbilitySystem/Objects/AbilityInstanceBase.h"
+#include "GameFramework/GameStateBase.h"
 
 UAbilityComponent::UAbilityComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(true);
 }
 
 void UAbilityComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InitializeAbilities();
+	if (GetOwner()->HasAuthority())
+	{
+		InitializeAbilities();
+	}
 }
 
 void UAbilityComponent::TickComponent(
@@ -33,10 +39,18 @@ void UAbilityComponent::TickComponent(
 	}
 }
 
+void UAbilityComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    
+	DOREPLIFETIME_CONDITION(UAbilityComponent, ReplicatedAbilitySlots, COND_OwnerOnly);
+}
+
 void UAbilityComponent::InitializeAbilities()
 {
-	AbilityInstances.SetNum(3);
-
+	AbilityInstances.SetNum(ABILITY_SLOT_COUNT);
+	ReplicatedAbilitySlots.SetNum(ABILITY_SLOT_COUNT);
+	
 	for (int32 SlotIndex = 0; SlotIndex < AbilityInstances.Num(); ++SlotIndex)
 	{
 		if (!InitialAbilityDefinitions.IsValidIndex(SlotIndex))
@@ -52,12 +66,11 @@ void UAbilityComponent::InitializeAbilities()
 
 		AssignAbilityToSlot(SlotIndex, AbilityDefinition);
 	}
-
 }
 
 bool UAbilityComponent::IsValidAbilitySlot(int32 SlotIndex) const
 {
-	return SlotIndex >= 0 && SlotIndex < 3;
+	return SlotIndex >= 0 && SlotIndex < ABILITY_SLOT_COUNT;
 }
 
 bool UAbilityComponent::AssignAbilityToSlot(int32 SlotIndex, UAbilityDefinition* AbilityDefinition)
@@ -88,8 +101,11 @@ bool UAbilityComponent::AssignAbilityToSlot(int32 SlotIndex, UAbilityDefinition*
 
 	AbilityInstance->Initialize(AbilityDefinition, this, SlotIndex);
 	AbilityInstances[SlotIndex] = AbilityInstance;
-	
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("Ability added to slot: %d"), SlotIndex));
+
+	FReplicatedAbilitySlot ReplicatedAbilitySlot;
+	ReplicatedAbilitySlot.AbilityDefinition = AbilityDefinition;
+	ReplicatedAbilitySlot.CurrentCooldown = AbilityDefinition->Cooldown;
+	ReplicatedAbilitySlots[SlotIndex] = ReplicatedAbilitySlot;
 	
 	return true;
 }
@@ -112,5 +128,69 @@ bool UAbilityComponent::TryActivateAbilityBySlot(int32 SlotIndex)
 		return false;
 	}
 
-	return AbilityInstance->Activate();
+	if (!AbilityInstance->Activate())
+	{
+		return false;
+	}
+
+	if (!ReplicatedAbilitySlots.IsValidIndex(SlotIndex))
+	{
+		return false;
+	}
+	
+	ReplicatedAbilitySlots[SlotIndex].CooldownStartTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	HandleReplicatedSlotsReplication();
+	return true;
+}
+
+void UAbilityComponent::OnRep_AbilitySlots()
+{
+	HandleReplicatedSlotsReplication();
+}
+
+void UAbilityComponent::HandleReplicatedSlotsReplication()
+{
+	OnReplicatedAbilitySlotsChanged.Broadcast();
+}
+
+float UAbilityComponent::GetCooldownRemainingForSlot(int32 SlotIndex) const
+{
+	if (!ReplicatedAbilitySlots.IsValidIndex(SlotIndex))
+	{
+		return 0.0f;
+	}
+
+	const FReplicatedAbilitySlot& Slot = ReplicatedAbilitySlots[SlotIndex];
+
+	if (Slot.CurrentCooldown <= 0.0f || Slot.CooldownStartTime < 0.0f)
+	{
+		return 0.0f;
+	}
+
+	const AGameStateBase* GameState = GetWorld() ? GetWorld()->GetGameState() : nullptr;
+	if (!GameState)
+	{
+		return 0.0f;
+	}
+
+	const float ServerTime = GameState->GetServerWorldTimeSeconds();
+	const float Elapsed = ServerTime - Slot.CooldownStartTime;
+
+	return FMath::Max(0.0f, Slot.CurrentCooldown - Elapsed);
+}
+
+float UAbilityComponent::GetCooldownPercentForSlot(int32 SlotIndex) const
+{
+	if (!ReplicatedAbilitySlots.IsValidIndex(SlotIndex))
+	{
+		return 0.0f;
+	}
+
+	const float CurrentCooldown = ReplicatedAbilitySlots[SlotIndex].CurrentCooldown;
+	if (CurrentCooldown <= 0.0f)
+	{
+		return 0.0f;
+	}
+
+	return GetCooldownRemainingForSlot(SlotIndex) / CurrentCooldown;
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "AbilitySystem/UI/AbilityCooldownTestWidget.h"
 #include "MPAHDCharacter.generated.h"
 
 class USpringArmComponent;
@@ -34,9 +35,17 @@ class AMPAHDCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UAbilityComponent* AbilityComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UAbilityCooldownTestWidget> AbilityCooldownWidgetClass;
+
+	UPROPERTY()
+	UAbilityCooldownTestWidget* AbilityCooldownWidget = nullptr;
 	
 protected:
 
+	virtual void BeginPlay() override;
+	
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* JumpAction;
@@ -76,7 +85,8 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-
+	void PrepareWidgets();
+	
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
