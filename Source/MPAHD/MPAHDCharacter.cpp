@@ -10,7 +10,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "MPAHDPlayerState.h"
+#include "MPAHDGameState.h"
 #include "MPAHD.h"
+#include "AbilitySystem/Components/AbilityComponent.h"
 
 AMPAHDCharacter::AMPAHDCharacter()
 {
@@ -46,6 +49,7 @@ AMPAHDCharacter::AMPAHDCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	AbilityComponent = CreateDefaultSubobject<UAbilityComponent>(TEXT("AbilityComponent"));
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -65,6 +69,14 @@ void AMPAHDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMPAHDCharacter::Look);
+
+		// Ready
+		EnhancedInputComponent->BindAction(ToggleReady, ETriggerEvent::Started, this, &AMPAHDCharacter::Input_ToggleReady);
+
+		//Ability
+		EnhancedInputComponent->BindAction(UseAbilityOne, ETriggerEvent::Started, this, &AMPAHDCharacter::Input_UseAbilityOne);
+		EnhancedInputComponent->BindAction(UseAbilityTwo, ETriggerEvent::Started, this, &AMPAHDCharacter::Input_UseAbilityTwo);
+		EnhancedInputComponent->BindAction(UseAbilityThree, ETriggerEvent::Started, this, &AMPAHDCharacter::Input_UseAbilityThree);
 	}
 	else
 	{
@@ -130,4 +142,57 @@ void AMPAHDCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AMPAHDCharacter::Input_ToggleReady()
+{
+	if (!IsInLobbyPhase())
+		return;
+
+	if (AMPAHDPlayerState* PS = GetPlayerState<AMPAHDPlayerState>())
+	{
+		ServerSetReady(!PS->IsReady());
+	}
+}
+
+void AMPAHDCharacter::Input_UseAbilityOne()
+{
+	ServerRequestActivateAbilitySlot(0);
+}
+
+void AMPAHDCharacter::Input_UseAbilityTwo()
+{
+	ServerRequestActivateAbilitySlot(1);
+}
+
+void AMPAHDCharacter::Input_UseAbilityThree()
+{
+	ServerRequestActivateAbilitySlot(2);
+}
+
+void AMPAHDCharacter::ServerSetReady_Implementation(bool bNewReady)
+{
+	if (AMPAHDPlayerState* PS = GetPlayerState<AMPAHDPlayerState>())
+	{
+		PS->SetReady_Server(bNewReady);
+	}
+}
+
+bool AMPAHDCharacter::IsInLobbyPhase() const
+{
+	if (const AMPAHDGameState* GS = GetWorld()->GetGameState<AMPAHDGameState>())
+	{
+		return GS->GetMatchPhase() == EMPAHDMatchPhase::Lobby;
+	}
+	return false;
+}
+
+void AMPAHDCharacter::ServerRequestActivateAbilitySlot_Implementation(int32 SlotIndex)
+{
+	if (!AbilityComponent)
+	{
+		return;
+	}
+
+	AbilityComponent->TryActivateAbilityBySlot(SlotIndex);
 }

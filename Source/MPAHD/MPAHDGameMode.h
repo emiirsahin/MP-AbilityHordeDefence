@@ -1,4 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -6,19 +5,16 @@
 #include "GameFramework/GameModeBase.h"
 #include "MPAHDGameMode.generated.h"
 
-/**
- *  Simple GameMode for a third person game
- */
-UCLASS(abstract)
-class AMPAHDGameMode : public AGameModeBase
+UCLASS()
+class MPAHD_API AMPAHDGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
-	
-	/** Constructor */
 	AMPAHDGameMode();
+
+	UFUNCTION(BlueprintCallable)
+	bool AreAllPlayersReady() const;
+
+	void TryStartMatch();
 };
-
-
-

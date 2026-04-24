@@ -10,6 +10,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
+class UAbilityComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -30,6 +31,9 @@ class AMPAHDCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	UAbilityComponent* AbilityComponent;
 	
 protected:
 
@@ -49,6 +53,18 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* ToggleReady;
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* UseAbilityOne;
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* UseAbilityTwo;
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* UseAbilityThree;
+	
 public:
 
 	/** Constructor */
@@ -66,6 +82,20 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+	
+	void Input_ToggleReady();
+
+	void Input_UseAbilityOne();
+	void Input_UseAbilityTwo();
+	void Input_UseAbilityThree();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerSetReady(bool bNewReady);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestActivateAbilitySlot(int32 SlotIndex);
+
+	bool IsInLobbyPhase() const;
 
 public:
 
