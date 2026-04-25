@@ -24,15 +24,16 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+	
 	UPROPERTY()
 	TObjectPtr<AActor> SourceActor;
 
 	UPROPERTY(EditDefaultsOnly, Category="Ability Actor", meta=(ClampMin="0.0"))
 	float LifeTime = 0.0f;
-	
+
+
 public:
-	virtual void Tick(float DeltaTime) override;
-	
 	virtual void InitializeAbilityActor(
 	AActor* InSourceActor,
 	UAbilityComponent* InSourceAbilityComponent);

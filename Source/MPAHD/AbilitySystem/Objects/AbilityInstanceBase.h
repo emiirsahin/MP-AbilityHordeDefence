@@ -63,4 +63,7 @@ protected:
 
 	UPROPERTY()
 	bool bIsInitialized = false;
+
+	UPROPERTY()
+	bool bIsInternal = false;
 };
