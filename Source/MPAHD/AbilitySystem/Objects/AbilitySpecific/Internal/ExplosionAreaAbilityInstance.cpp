@@ -3,6 +3,7 @@
 #include "AbilitySystem/Actors/AbilityActorBase.h"
 #include "AbilitySystem/DataAssets/AbilitySpecific/Internal/ExplosionAreaAbilityDefinition.h"
 #include "AbilitySystem/Actors/AbilitySpecific/FireballAbilityActor.h"
+#include "AbilitySystem/Actors/AbilitySpecific/Internal/ExplosionAreaAbilityActor.h"
 
 void UExplosionAreaAbilityInstance::CommitActivation()
 {
@@ -16,11 +17,11 @@ void UExplosionAreaAbilityInstance::Initialize(UAbilityDefinition* InAbilityDefi
 {
 	Super::Initialize(InAbilityDefinition, InOwningAbilityComponent, InSlotIndex);
 
-	if (UExplosionAreaAbilityDefinition* ExplosiveAreaAbilityDefinition = Cast<UExplosionAreaAbilityDefinition>(InAbilityDefinition))
+	if (UExplosionAreaAbilityDefinition* ExplosionAreaAbilityDefinition = Cast<UExplosionAreaAbilityDefinition>(InAbilityDefinition))
 	{
-		BaseExplosionDamage = ExplosiveAreaAbilityDefinition->BaseExplosionDamage;
-		ExplosionRadius = ExplosiveAreaAbilityDefinition->ExplosionRadius;
-		ExplosionDamageFalloffCurve = ExplosiveAreaAbilityDefinition->ExplosionDamageFalloffCurve;
+		BaseExplosionDamage = ExplosionAreaAbilityDefinition->BaseExplosionDamage;
+		ExplosionRadius = ExplosionAreaAbilityDefinition->ExplosionRadius;
+		ExplosionDamageFalloffCurve = ExplosionAreaAbilityDefinition->ExplosionDamageFalloffCurve;
 	}
 }
 
@@ -45,6 +46,10 @@ AAbilityActorBase* UExplosionAreaAbilityInstance::SpawnAbilityActor()
 		OwningFireball->GetActorRotation()
 	);
 
+	if (AExplosionAreaAbilityActor* ExplosionAreaAbilityActor = Cast<AExplosionAreaAbilityActor>(SpawnedActor))
+	{
+		ExplosionAreaAbilityActor->InitializeExplosion(ExplosionRadius, BaseExplosionDamage, ExplosionDamageFalloffCurve);
+	}
 	return SpawnedActor;
 }
 

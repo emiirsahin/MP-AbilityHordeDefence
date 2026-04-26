@@ -73,7 +73,6 @@ void AFireballAbilityActor::SpawnExplosionAreaActor()
 			FireballInstance->SpawnExplosionArea(this);
 		}
 	}
-
 	
 	Destroy();
 }
