@@ -20,8 +20,15 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 	
 	UPROPERTY(BlueprintReadonly, Category = "Fireball|Movement")
 	float ProjectileSpeed = 0.0f;
+
+	void SpawnExplosionAreaActor();
+
+	UFUNCTION()
+	void OnProjectileStop(const FHitResult& ImpactResult);
 };

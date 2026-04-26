@@ -1,9 +1,10 @@
 
 #include "AbilitySystem/Objects/AbilitySpecific/FireballAbilityInstance.h"
-
 #include "MPAHDCharacter.h"
 #include "AbilitySystem/Actors/AbilitySpecific/FireballAbilityActor.h"
 #include "AbilitySystem/DataAssets/AbilitySpecific/FireballDefinition.h"
+#include "AbilitySystem/DataAssets/AbilitySpecific/Internal/ExplosionAreaAbilityDefinition.h"
+#include "Internal/ExplosionAreaAbilityInstance.h"
 
 void UFireballAbilityInstance::CommitActivation()
 {
@@ -20,7 +21,10 @@ void UFireballAbilityInstance::Initialize(UAbilityDefinition* InAbilityDefinitio
 	if (UFireballDefinition* FireballDefinition = Cast<UFireballDefinition>(InAbilityDefinition))
 	{
 		ProjectileSpeed = FireballDefinition->ProjectileSpeed;
+		ExplosionAreaAbilityDefinition = FireballDefinition->ExplosionAreaDefinition;
 	}
+
+	InitializeInternalAbilities();
 }
 
 AAbilityActorBase* UFireballAbilityInstance::SpawnAbilityActor()
@@ -54,16 +58,56 @@ AAbilityActorBase* UFireballAbilityInstance::SpawnAbilityActor()
 
 	FRotator SpawnRotation = CameraForward.Rotation();
 	
-	AAbilityActorBase* SpawnedActor = World->SpawnActor<AAbilityActorBase>(
+	AFireballAbilityActor* FireballActor = World->SpawnActor<AFireballAbilityActor>(
 		AbilityActorClass,
 		SpawnLocation,
 		SpawnRotation
 	);
-
-	if (AFireballAbilityActor* FireballActor = Cast<AFireballAbilityActor>(SpawnedActor))
+	
+	if (FireballActor)
 	{
 		FireballActor->SetProjectileSpeed(ProjectileSpeed);
 	}
+
+	FireballActor->InitializeAbilityActor(
+	OwningActor,
+	OwningAbilityComponent,
+	this);
 	
-	return SpawnedActor;
+	return FireballActor;
+}
+
+void UFireballAbilityInstance::SpawnExplosionArea(AFireballAbilityActor* InFireballActor)
+{
+	if (!ExplosionAreaAbilityInstance)
+	{
+		return;
+	}
+	
+	ExplosionAreaAbilityInstance->SetOwningFireball(InFireballActor);
+	ExplosionAreaAbilityInstance->CommitActivation();
+}
+
+void UFireballAbilityInstance::InitializeInternalAbilities()
+{
+	if (!ExplosionAreaAbilityDefinition)
+	{
+		return;
+	}
+
+	if (!ExplosionAreaAbilityDefinition->AbilityInstanceClass)
+	{
+		return;
+	}
+
+	ExplosionAreaAbilityInstance = NewObject<UExplosionAreaAbilityInstance>(
+		this,
+		ExplosionAreaAbilityDefinition->AbilityInstanceClass);
+
+	if (!ExplosionAreaAbilityInstance)
+	{
+		return;
+	}
+
+	ExplosionAreaAbilityInstance->Initialize(ExplosionAreaAbilityDefinition, GetOwningAbilityComponent(), 0);
 }

@@ -9,5 +9,6 @@ UCLASS()
 class MPAHD_API AExplosionAreaAbilityActor : public AAbilityActorBase
 {
 	GENERATED_BODY()
-	
+
+	AExplosionAreaAbilityActor();
 };

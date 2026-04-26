@@ -6,20 +6,19 @@
 #include "AbilityActorBase.generated.h"
 
 class UAbilityComponent;
+class UAbilityInstanceBase;
 
 UCLASS()
 class MPAHD_API AAbilityActorBase : public AActor
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UAbilityComponent> SourceAbilityComponent;
 	
 public:	
 	AAbilityActorBase();
 
 	AActor* GetSourceActor() const { return SourceActor; }
 	UAbilityComponent* GetSourceAbilityComponent() const { return SourceAbilityComponent; }
+	UAbilityInstanceBase* GetSourceAbilityInstance() const { return SourceAbilityInstance; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -29,6 +28,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<AActor> SourceActor;
 
+	UPROPERTY()
+	TObjectPtr<UAbilityComponent> SourceAbilityComponent;
+
+	UPROPERTY()
+	TObjectPtr<UAbilityInstanceBase> SourceAbilityInstance;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Ability Actor", meta=(ClampMin="0.0"))
 	float LifeTime = 0.0f;
 
@@ -36,5 +41,6 @@ protected:
 public:
 	virtual void InitializeAbilityActor(
 	AActor* InSourceActor,
-	UAbilityComponent* InSourceAbilityComponent);
+	UAbilityComponent* InSourceAbilityComponent,
+	UAbilityInstanceBase* InSourceAbilityInstance);
 };

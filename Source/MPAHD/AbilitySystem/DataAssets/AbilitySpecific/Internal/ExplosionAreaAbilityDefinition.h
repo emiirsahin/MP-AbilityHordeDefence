@@ -11,12 +11,12 @@ class MPAHD_API UExplosionAreaAbilityDefinition : public UActorSpawningAbilityDe
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability|Runtime|Explosion")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability|Explosion")
 	float BaseExplosionDamage = 50.f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability|Runtime|Explosion")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability|Explosion")
 	float ExplosionRadius = 300.f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability|Runtime|Explosion")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability|Explosion")
 	TObjectPtr<UCurveFloat> ExplosionDamageFalloffCurve;
 };

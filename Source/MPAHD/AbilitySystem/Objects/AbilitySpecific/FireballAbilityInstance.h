@@ -5,11 +5,20 @@
 #include "AbilitySystem/Objects/ActorSpawningAbilityInstance.h"
 #include "FireballAbilityInstance.generated.h"
 
+class AFireballAbilityActor;
+class UExplosionAreaAbilityInstance;
+class UExplosionAreaAbilityDefinition;
+
 UCLASS()
 class MPAHD_API UFireballAbilityInstance : public UActorSpawningAbilityInstance
 {
 	GENERATED_BODY()
 
+public:
+	friend class UFireballAbilityInstance;
+
+	void SpawnExplosionArea(AFireballAbilityActor* InFireballActor);
+	
 protected:
 	virtual void CommitActivation() override;
 	
@@ -22,4 +31,16 @@ protected:
 	
 	UPROPERTY()
 	float ProjectileSpeed = 0.0f;
+
+private:
+	UPROPERTY()
+	TObjectPtr<UExplosionAreaAbilityDefinition> ExplosionAreaAbilityDefinition;
+
+	UPROPERTY()
+	TObjectPtr<UExplosionAreaAbilityInstance> ExplosionAreaAbilityInstance;
+
+
+
+	
+	void InitializeInternalAbilities();
 };

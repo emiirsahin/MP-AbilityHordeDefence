@@ -24,8 +24,10 @@ void AAbilityActorBase::Tick(float DeltaTime)
 
 void AAbilityActorBase::InitializeAbilityActor(
 	AActor* InSourceActor,
-	UAbilityComponent* InSourceAbilityComponent)
+	UAbilityComponent* InSourceAbilityComponent,
+	UAbilityInstanceBase* InAbilityInstance)
 {
 	SourceActor = InSourceActor;
 	SourceAbilityComponent = InSourceAbilityComponent;
+	SourceAbilityInstance = InAbilityInstance;
 }
